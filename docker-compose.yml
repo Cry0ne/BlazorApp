@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  blazorapp:
+    image: ${DOCKER_REGISTRY-}blazorapp
+    build:
+      context: .
+      dockerfile: BlazorApp/Dockerfile
+    depends_on: 
+        - mssql
+
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    volumes:
+      - ~/apps/mssql/data:/var/lib/mssqlql/data
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=qF@F!N09G&@!(*BG!)G#@
