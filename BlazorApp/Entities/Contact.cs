@@ -17,7 +17,7 @@ namespace BlazorApp.Entities
 
         [Required]
         [StringLength(150, ErrorMessage = "Поле 'Aдрес' не может содержать более 150 символов")]
-        public string Adress { get; set; }
+        public string Address { get; set; }
 
         [Required]
         public int Office { get; set; }

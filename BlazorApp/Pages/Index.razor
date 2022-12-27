@@ -1,11 +1,67 @@
 ﻿@page "/"
+@using AntDesign;
 @using BlazorApp.Context;
+@using BlazorApp.Entities;
+@using System.ComponentModel
+@using AntDesign.TableModels
+@using System.Text.Json;
+@inject IDbContextFactory<PhoneBookContext> DbFactory
 
 <PageTitle>Главная</PageTitle>
+<div>
+    <Button OnClick=@OnInitialized>Получить</Button>
+    <Table DataSource=@Contacts Bordered>
+        <Selection/>
+        <PropertyColumn Property="c=>c.Id" Title="Id"></PropertyColumn>
+        <PropertyColumn Property="c=>c.Name" Title="Имя"></PropertyColumn>
+        <PropertyColumn Property="c=>c.Phone" Title="Номер телефона"></PropertyColumn>
+        <PropertyColumn Property="c=>c.Address" Title="Адрес"></PropertyColumn>
+        <PropertyColumn Property="c=>c.Office" Title="Кабинет"></PropertyColumn>
+        <PropertyColumn Property="c=>c.Department.Name" Title="Отдел"></PropertyColumn>
+        <ActionColumn Title="Action">
+            <Popconfirm Title="Sure to delete?"
+                        OnConfirm="()=> deleteRow(context.Id)"
+                        OkText="Yes"
+                        CancelText="No">
+                <a>Delete</a>
+            </Popconfirm>
+        </ActionColumn>
+        @foreach (var contact in Contacts)
+        {
+            <Row>
+                <td>@contact.Id</td>
+                <td>@contact.Name</td>
+                <td>@contact.Phone</td>
+                <td>@contact.Address</td>
+                <td>@contact.Office</td>
+                <td>@contact.Department.Name</td>
+            </Row>
+        }
+    </Table>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    Contact contact;
+    Contact[] Contacts = Array.Empty<Contact>();
 
+    protected override async void OnInitialized()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Contacts = await context.Contacts.ToArrayAsync();
+    }
+    async Task deleteRow(int id)
+    {
+        contact = Contacts.Where(d => d.Id != id).First();
+        using var context = DbFactory.CreateDbContext();
 
-@code{
-
+        if (contact is not null)
+        {
+            context.Contacts?.Remove(contact);
+        }
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch { }
+    }
 }

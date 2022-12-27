@@ -4,7 +4,7 @@
 @using Microsoft.AspNetCore.Components.Forms;
 @inject IDbContextFactory<PhoneBookContext> DbFactory
 
-
+<PageTitle>Добавить контакт</PageTitle>
 @if (SubmitResult != null)
 {
     <h2>
@@ -13,34 +13,34 @@
 }
 
 <EditForm Model=@Contact OnValidSubmit=@ValidFormSubmitted OnInvalidSubmit=@InvalidFormSubmitted>
-     <DataAnnotationsValidator />
-     <ValidationSummary />
-     <h3>Имя</h3>
-     <InputText @bind-Value=@Contact.Name />
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <h3>Имя</h3>
+    <InputText @bind-Value=@Contact.Name />
 
-     <h3>Телефон</h3>
-     <InputText @bind-Value=@Contact.Phone />
+    <h3>Телефон</h3>
+    <InputText @bind-Value=@Contact.Phone />
 
-     <h3>Адрес</h3>
-     <InputText @bind-Value=@Contact.Adress />
+    <h3>Адрес</h3>
+    <InputText @bind-Value=@Contact.Address />
 
-     <h3>Кабинет</h3>
-     <InputNumber max @bind-Value=@Contact.Office />
+    <h3>Кабинет</h3>
+    <InputNumber max @bind-Value=@Contact.Office />
 
-     <h3>Отдел</h3>
-     <InputSelect  @bind-Value="@Contact.DepartmentId">
-             <option value=0>Выбрать отдел</option>
-         @foreach (var department in Departments)
-         {
-             <option value=@department.Id>@department.Name</option>
-         }
-     </InputSelect>
+    <h3>Отдел</h3>
+    <InputSelect  @bind-Value="@Contact.DepartmentId">
+        <option value=0>Выбрать отдел</option>
+        @foreach (var department in Departments)
+        {
+            <option value=@department.Id>@department.Name</option>
+        }
+    </InputSelect>
 
-     <br />
-     <button type="submit" class="btn btn-success">Добавить</button>
- </EditForm>
+    <br />
+    <button type="submit" class="btn btn-success">Добавить</button>
+</EditForm>
 
- <hr />
+<hr />
 
 <table class="table">
     <thead>
@@ -60,7 +60,7 @@
                 <td>@contact.Id</td>
                 <td>@contact.Name</td>
                 <td>@contact.Phone</td>
-                <td>@contact.Adress</td>
+                <td>@contact.Address</td>
                 <td>@contact.Office</td>
                 <td>@contact.Department.Name</td>
             </tr>
@@ -69,26 +69,24 @@
 </table>
 
 @code {
-    private List<Department> Departments { get; set; }
+    private List<Department> Departments { get; set; } = new List<Department>();
 
-    private List<Contact> Contacts { get; set; }
+    private List<Contact> Contacts { get; set; } = new List<Contact>();
 
     public Contact Contact = new Contact();
 
     string SubmitResult;
 
-    protected override Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
-        ReloadAsync();
-        return base.OnInitializedAsync();
+        await ReloadAsync();
     }
 
-    private Task ReloadAsync()
+    private async Task ReloadAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Departments = context.Departments.ToList();
-        Contacts = context.Contacts.ToList();
-        return Task.CompletedTask;
+        Departments = await context.Departments.ToListAsync();
+        Contacts = await context.Contacts.ToListAsync();
     }
 
     async Task ValidFormSubmitted(EditContext editContext)

@@ -16,7 +16,7 @@ builder.Services.AddDbContext<PhoneBookContext>(options =>
 
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
+builder.Services.AddAntDesign();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
