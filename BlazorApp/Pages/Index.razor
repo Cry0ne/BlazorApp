@@ -26,17 +26,6 @@
                 <a>Delete</a>
             </Popconfirm>
         </ActionColumn>
-        @foreach (var contact in Contacts)
-        {
-            <Row>
-                <td>@contact.Id</td>
-                <td>@contact.Name</td>
-                <td>@contact.Phone</td>
-                <td>@contact.Address</td>
-                <td>@contact.Office</td>
-                <td>@contact.Department.Name</td>
-            </Row>
-        }
     </Table>
 </div>
 
