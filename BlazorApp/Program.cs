@@ -1,5 +1,7 @@
+using AntDesign;
 using BlazorApp.Context;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,16 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddDbContextFactory<PhoneBookContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("PhoneBookDB")));
-
-
-builder.Services.AddDbContext<PhoneBookContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("PhoneBookDB")));
-
-
+builder.Services.AddDbContextFactory<PhoneBookContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("PhoneBookDB")));
+builder.Services.AddDbContext<PhoneBookContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("PhoneBookDB")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
 builder.Services.AddAntDesign();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

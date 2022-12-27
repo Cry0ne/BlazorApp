@@ -1,4 +1,5 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using AntDesign
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">PhoneBook</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -11,17 +12,17 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Главная
+                <Icon Type="book" Theme="outline" /> Главная
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="addcontact">
-                <span class="oi oi-plus" aria-hidden="true"></span> Добавить контакт
+                <Icon Type="user-add" Theme="outline" /> Добавить контакт
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="adddepartment">
-                <span class="oi oi-plus" aria-hidden="true"></span> Добавить отдел
+            <NavLink class="nav-link" href="settings">
+                <Icon Type="setting" Theme="outline"/> Настройки
             </NavLink>
         </div>
     </nav>

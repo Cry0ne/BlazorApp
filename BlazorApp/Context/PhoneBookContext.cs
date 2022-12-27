@@ -15,5 +15,6 @@ namespace BlazorApp.Context
 
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Office> Offices { get; set; }
     }
 }

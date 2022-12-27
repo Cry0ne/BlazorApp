@@ -20,7 +20,10 @@ namespace BlazorApp.Entities
         public string Address { get; set; }
 
         [Required]
-        public int Office { get; set; }
+        [ForeignKey(nameof(Office))]
+        public int OfficeId { get; set; }
+
+        public virtual Office Office { get; set; }
 
         [Required]
         [ForeignKey(nameof(Department))]

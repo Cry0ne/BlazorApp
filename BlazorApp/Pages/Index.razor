@@ -2,55 +2,55 @@
 @using AntDesign;
 @using BlazorApp.Context;
 @using BlazorApp.Entities;
-@using System.ComponentModel
-@using AntDesign.TableModels
-@using System.Text.Json;
 @inject IDbContextFactory<PhoneBookContext> DbFactory
+@inject IMessageService _message
 
-<PageTitle>Главная</PageTitle>
-<div>
-    <Button OnClick=@OnInitialized>Получить</Button>
-    <Table DataSource=@Contacts Bordered>
-        <Selection/>
-        <PropertyColumn Property="c=>c.Id" Title="Id"></PropertyColumn>
-        <PropertyColumn Property="c=>c.Name" Title="Имя"></PropertyColumn>
-        <PropertyColumn Property="c=>c.Phone" Title="Номер телефона"></PropertyColumn>
-        <PropertyColumn Property="c=>c.Address" Title="Адрес"></PropertyColumn>
-        <PropertyColumn Property="c=>c.Office" Title="Кабинет"></PropertyColumn>
-        <PropertyColumn Property="c=>c.Department.Name" Title="Отдел"></PropertyColumn>
-        <ActionColumn Title="Action">
-            <Popconfirm Title="Sure to delete?"
-                        OnConfirm="()=> deleteRow(context.Id)"
-                        OkText="Yes"
-                        CancelText="No">
-                <a>Delete</a>
+<PageTitle>Телефонный справочник</PageTitle>
+@if (_contacts == null || _departments == null)
+{
+    <Spin Tip="Загрузка..."/>
+}
+else
+{
+    <Table DataSource=@_contacts HidePagination>
+        <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
+        <PropertyColumn Filterable Property="c=>c.Name" Title="Имя"></PropertyColumn>
+        <PropertyColumn Filterable Property="c=>c.Phone" Title="Номер телефона"></PropertyColumn>
+        <PropertyColumn Filterable Property="c=>c.Address" Title="Адрес"></PropertyColumn>
+        <PropertyColumn Filterable Property="c=>c.Office.Number" Title="Кабинет"></PropertyColumn>
+        <PropertyColumn Filterable Property="c=>c.Department.Name" Title="Отдел"></PropertyColumn>
+        <ActionColumn>
+            <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteContact(context.Id)" OkText="Да" CancelText="Нет">
+                <Button Danger>Удалить</Button>
             </Popconfirm>
         </ActionColumn>
     </Table>
-</div>
-
+}
 @code {
-    Contact contact;
-    Contact[] Contacts = Array.Empty<Contact>();
+    private List<Contact> _contacts { get; set; } = new List<Contact>();
+    private List<Department> _departments { get; set; } = new List<Department>();
+    private List<Office> _offices { get; set; } = new List<Office>();
 
-    protected override async void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Contacts = await context.Contacts.ToArrayAsync();
+        using var context = await DbFactory.CreateDbContextAsync();
+        _contacts = await context.Contacts.ToListAsync();
+        _departments = await context.Departments.ToListAsync();
+        _offices = await context.Offices.ToListAsync();
+        StateHasChanged();
     }
-    async Task deleteRow(int id)
+
+    private async Task DeleteContact(int id)
     {
-        contact = Contacts.Where(d => d.Id != id).First();
+        var contact = _contacts.Find(d => d.Id == id);
         using var context = DbFactory.CreateDbContext();
 
         if (contact is not null)
         {
-            context.Contacts?.Remove(contact);
-        }
-        try
-        {
+            _contacts.Remove(contact);
+            context.Remove<Contact>(contact);
             await context.SaveChangesAsync();
+            await _message.Success("Готово!", 5);
         }
-        catch { }
     }
 }
