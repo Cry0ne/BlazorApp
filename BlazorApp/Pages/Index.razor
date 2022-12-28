@@ -6,6 +6,65 @@
 @inject IMessageService _message
 
 <PageTitle>Телефонный справочник</PageTitle>
+
+
+<Button Type="primary" OnClick="@ShowModal">
+    Добавить контакт
+</Button>
+<Modal Title="Добавить пользователя"
+       Visible="@_visible"
+       OnCancel="@HandleCancel"
+       OkText="@("Добавить")"
+       OnOk="@HandleOk">
+    <Space>
+        <SpaceItem>
+            <Form @ref="_contactForm" Model=@_contact OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted">
+                <FormItem Label="Имя">
+                    <Input @bind-Value="@_contact.Name" />
+                </FormItem>
+                <FormItem Label="Телефон">
+                    <Input @bind-Value="@_contact.Phone" />
+                </FormItem>
+                <FormItem Label="Адрес">
+                    <Input @bind-Value="@_contact.Address" />
+                </FormItem>
+                <FormItem Label="Кабинет">
+                    <Select @bind-Value="@_contact.OfficeId"
+                            Style="width: 120px;"
+                            DefaultValue="0"
+                            TItemValue="int"
+                            TItem="string"
+                            Placeholder="Выбрать...">
+                        <SelectOptions>
+                            @foreach (var office in _offices)
+                            {
+                                <SelectOption TItemValue="int" TItem="string" Value="@office.Id" Label="@office.Number.ToString()" />
+                            }
+                        </SelectOptions>
+                    </Select>
+                </FormItem>
+                <FormItem Label="Отдел">
+                    <Select @bind-Value="@_contact.DepartmentId"
+                            Style="width: 120px;"
+                            DefaultValue="0"
+                            TItemValue="int"
+                            TItem="string"
+                            Placeholder="Выбрать...">
+                        <SelectOptions>
+                            @foreach (var department in _departments)
+                            {
+                                <SelectOption TItemValue="int" TItem="string" Value="@department.Id" Label="@department.Name.ToString()" />
+                            }
+                        </SelectOptions>
+                    </Select>
+                </FormItem>
+            </Form>
+        </SpaceItem>
+    </Space>
+</Modal>
+
+
+
 @if (_contacts == null || _departments == null)
 {
     <Spin Tip="Загрузка..."/>
@@ -26,10 +85,20 @@ else
         </ActionColumn>
     </Table>
 }
+
 @code {
+    private Form<AddContact> _form;
+    AntDesign.Internal.IForm _contactForm;
+    private bool _visible = false;
+    private bool _isValid = false;
+
+    private bool _dataContactLoading = true;
+
     private List<Contact> _contacts { get; set; } = new List<Contact>();
     private List<Department> _departments { get; set; } = new List<Department>();
     private List<Office> _offices { get; set; } = new List<Office>();
+
+    private Contact _contact = new Contact();
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,8 +109,56 @@ else
         StateHasChanged();
     }
 
+    #region FormAddContact
+    private void HandleOk(MouseEventArgs e)
+    {
+        _contactForm.Submit();
+
+        StateHasChanged();
+        if (_isValid)
+        {
+            _visible = false;
+        }
+    }
+
+    private void HandleCancel(MouseEventArgs e)
+    {
+        _contactForm.Reset();
+        _visible = false;
+        StateHasChanged();
+    }
+
+    private void ShowModal()
+    {
+        _visible = true;
+    }
+
+    private async Task ValidFormSubmitted(EditContext editContext)
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        if (_contact is not null)
+        {
+            context.Contacts?.Add(_contact);
+            await context.SaveChangesAsync();
+            _contact = new();
+            _isValid = true;
+            _message.Success("Готово!", 3);
+        }
+    }
+
+    async Task InvalidFormSubmitted(EditContext editContext)
+    {
+        _isValid = false;
+        await _message.Error("Форма заполнена неверно.", 3);
+    }
+    #endregion
+
+
+    #region Table
     private async Task DeleteContact(int id)
     {
+        _dataContactLoading = true;
         var contact = _contacts.Find(d => d.Id == id);
         using var context = DbFactory.CreateDbContext();
 
@@ -50,7 +167,11 @@ else
             _contacts.Remove(contact);
             context.Remove<Contact>(contact);
             await context.SaveChangesAsync();
-            await _message.Success("Готово!", 5);
+            
         }
+        _dataContactLoading = false
+        _message.Success("Готово!", 5);
+
     }
+    #endregion
 }

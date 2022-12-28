@@ -9,7 +9,7 @@
 <PageTitle>Добавить контакт</PageTitle>
 <Space>
     <SpaceItem>
-        <Form Model=@_contact OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted">
+        <Form @ref="_contactForm" Model=@_contact OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted">
             <FormItem Label="Имя">
                 <Input @bind-Value="@_contact.Name" />
             </FormItem>
@@ -49,7 +49,7 @@
                     </SelectOptions>
                 </Select>
             </FormItem>
-            <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="StateHasChanged">
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
                 Добавить
             </Button>
         </Form>
@@ -57,35 +57,13 @@
 </Space>
 
 
-<hr />
-
-@if (_contacts == null || _departments == null || _offices == null)
-{
-    <Spin Tip="Загрузка..." />
-}
-else
-{
-    <Table DataSource=@_contacts HidePagination>
-        <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Name" Title="Имя"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Phone" Title="Номер телефона"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Address" Title="Адрес"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Office.Number" Title="Кабинет"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Department.Name" Title="Отдел"></PropertyColumn>
-        <ActionColumn>
-            <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteContact(context.Id)" OkText="Да" CancelText="Нет">
-                <Button Danger>Удалить</Button>
-            </Popconfirm>
-        </ActionColumn>
-    </Table>
-}
-
 @code {
     private List<Contact> _contacts { get; set; } = new List<Contact>();
     private List<Department> _departments { get; set; } = new List<Department>();
     private List<Office> _offices { get; set; } = new List<Office>();
     private Contact _contact = new Contact();
 
+    AntDesign.Internal.IForm _contactForm;
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,40 +74,24 @@ else
         StateHasChanged();
     }
 
-    private async Task DeleteContact(int id)
+    private async Task ValidFormSubmitted(EditContext editContext)
     {
-        var contact = _contacts.Find(d => d.Id == id);
         using var context = DbFactory.CreateDbContext();
 
-        if (contact is not null)
+        if (_contact is not null)
         {
-            _contacts.Remove(contact);
-            context.Remove<Contact>(contact);
+            context.Contacts?.Add(_contact);
             await context.SaveChangesAsync();
+            _contact = new();
+            _contactForm.Reset();
+            StateHasChanged();
+            _message.Success("Готово!", 3);
         }
-    }
-
-    async Task ValidFormSubmitted(EditContext editContext)
-    {
-        try
-        {
-            using var context = DbFactory.CreateDbContext();
-
-            if (_contact is not null)
-            {
-                context.Contacts?.Add(_contact);
-                await context.SaveChangesAsync();
-                await _message.Success("Готово!", 5);
-            }
-            
-        }catch(Exception ex)
-        {
-            await _message.Error($"{ex.Message}", 5);
-        }
+        
     }
 
     async Task InvalidFormSubmitted(EditContext editContext)
     {
-        await _message.Error("Форма заполнена неверно.", 5);
+        await _message.Error("Форма заполнена неверно.", 3);
     }
 }

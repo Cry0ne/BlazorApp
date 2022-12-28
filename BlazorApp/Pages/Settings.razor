@@ -10,138 +10,158 @@
 <PageTitle>Настройки</PageTitle>
 
 
-<Space Direction="DirectionVHType.Vertical" Style="max-width:600px">
+<Space Direction="DirectionVHType.Horizontal" Style="max-width:600px">
+
+
     <SpaceItem>
-        <Card Title=@("Отделы") >
-            <Form Model=@_department OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
-                <FormItem>
+        <Card Title=@("Отделы") Style="min-height:500px; min-width:400px">
+            <Form @ref="_departmenteForm" Model=@_department OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
+                <FormItem Label="Название">
                     <Input @bind-Value="@_department.Name" />
                 </FormItem>
-                <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="StateHasChanged">
+                <Button Type="@ButtonType.Primary" HtmlType="submit">
                     Добавить
                 </Button>
             </Form>
             <hr />
             <Space>
-                @if (_departments == null)
-                {
-                    <Spin Tip="Загрузка..." />
-                }
-                else
-                {
-                    <Table DataSource=@_departments HidePagination>
-                        <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
-                        <PropertyColumn Filterable Property="c=>c.Name" Title="Название"></PropertyColumn>
-                        <ActionColumn>
-                            <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteDepartment(context.Id)" OkText="Да" CancelText="Нет">
-                                <Button Danger>Удалить</Button>
-                            </Popconfirm>
-                        </ActionColumn>
-                    </Table>
-                }
+                <Table DataSource=@_departments HidePagination Loading=@_dataDepartmentLoading>
+                    <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
+                    <PropertyColumn Filterable Property="c=>c.Name" Title="Название"></PropertyColumn>
+                    <ActionColumn>
+                        <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteDepartment(context.Id)" OkText="Да" CancelText="Нет">
+                            <Button Danger>Удалить</Button>
+                        </Popconfirm>
+                    </ActionColumn>
+                </Table>
             </Space>
         </Card>
     </SpaceItem>
+
+
     <SpaceItem>
-        <Card Title=@("Кабинеты") Style="width:100%">
-            <Form Model=@_office OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
-                <FormItem>
+        <Card Title=@("Кабинеты") Style="min-height:500px; min-width:400px">
+            <Form @ref="_officeForm" Model=@_office OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
+                <FormItem Label="Номер кабинет">
                     <Input @bind-Value="@_office.Number" />
                 </FormItem>
-                <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="StateHasChanged">
+                <Button Type="@ButtonType.Primary" HtmlType="submit">
                     Добавить
                 </Button>
             </Form>
             <hr />
             <Space>
-                @if (_offices == null)
-                {
-                    <Spin Tip="Загрузка..." />
-                }
-                else
-                {
-                    <Table DataSource=@_offices HidePagination>
-                        <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
-                        <PropertyColumn Filterable Property="c=>c.Number" Title="Номер кабинета"></PropertyColumn>
-                        <ActionColumn>
-                            <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteOffice(context.Id)" OkText="Да" CancelText="Нет">
-                                <Button Danger>Удалить</Button>
-                            </Popconfirm>
-                        </ActionColumn>
-                    </Table>
-                }
+                <Table DataSource=@_offices HidePagination Loading=@_dataOfficeLoading ScrollY="200px">
+                    <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
+                    <PropertyColumn Filterable Property="c=>c.Number" Title="Номер кабинета"></PropertyColumn>
+                    <ActionColumn>
+                        <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteOffice(context.Id)" OkText="Да" CancelText="Нет">
+                            <Button Danger>Удалить</Button>
+                        </Popconfirm>
+                    </ActionColumn>
+                </Table>
             </Space>
         </Card>
     </SpaceItem>
+
+
 </Space>
 
 @code {
     private List<Department> _departments { get; set; } = new List<Department>();
     private List<Office> _offices { get; set; } = new List<Office>();
 
-    public Department _department = new Department();
-    public Office _office = new Office();
+    private Department _department = new Department();
+    private Office _office = new Office();
+
+    private bool _dataDepartmentLoading;
+    private bool _dataOfficeLoading;
+
+    AntDesign.Internal.IForm _departmenteForm;
+    AntDesign.Internal.IForm _officeForm;
 
     protected override async Task OnInitializedAsync()
     {
         using var context = await DbFactory.CreateDbContextAsync();
         _departments = await context.Departments.ToListAsync();
         _offices = await context.Offices.ToListAsync();
+        StateHasChanged();
     }
-
 
     private async Task DeleteDepartment(int id)
     {
+        _dataDepartmentLoading = true;
         var department = _departments.Find(d => d.Id == id);
-        using var context = DbFactory.CreateDbContext();
-
-        if (department is not null)
+        using (var context = DbFactory.CreateDbContext())
         {
-            _departments.Remove(department);
-            context.Remove<Department>(department);
-            await context.SaveChangesAsync();
+            if (department is not null)
+            {
+                _departments.Remove(department);
+                context.Remove<Department>(department);
+                await context.SaveChangesAsync();
+            }
         }
+
+        _dataDepartmentLoading = false;
+        _message.Success("Готово!", 5);
     }
 
     private async Task DeleteOffice(int id)
     {
+        _dataOfficeLoading = true;
         var office = _offices.Find(d => d.Id == id);
-        using var context = DbFactory.CreateDbContext();
-
-        if (office is not null)
+        using (var context = DbFactory.CreateDbContext())
         {
-            _offices.Remove(office);
-            context.Remove<Office>(office);
-            await context.SaveChangesAsync();
+            if (office is not null)
+            {
+                _offices.Remove(office);
+                context.Remove<Office>(office);
+                await context.SaveChangesAsync();
+            }
         }
+
+        _dataOfficeLoading = false;
+        _message.Success("Готово!", 5);
     }
 
-    async Task ValidFormSubmitted(EditContext editContext)
+
+    private async Task ValidFormSubmitted(EditContext editContext)
     {
         using var context = DbFactory.CreateDbContext();
         switch (editContext.Model)
         {
-            case Department:
-                if (_department is not null)
-                {
-                    _departments.Add(_department);
-                    context.Departments?.Add(_department);
-                }
-                break;
             case Office:
+                _dataOfficeLoading = true;
                 if (_office is not null)
                 {
                     _offices.Add(_office);
                     context.Offices?.Add(_office);
+                    await context.SaveChangesAsync();
+                    _office = new();
                 }
+                _dataOfficeLoading = false;
+                _officeForm?.Reset();
+                break;
+
+            case Department:
+                _dataDepartmentLoading = true;
+                if (_department is not null)
+                {
+                    _departments.Add(_department);
+                    context.Departments?.Add(_department);
+                    await context.SaveChangesAsync();
+                    _department = new();
+                }
+                _dataDepartmentLoading = false;
+                _departmenteForm?.Reset();
                 break;
         }
-
-        await context.SaveChangesAsync();
-        await _message.Success("Готово!", 5);
+        
+        StateHasChanged();
+        _message.Success("Готово!", 5);
     }
 
-    async Task InvalidFormSubmitted(EditContext editContext)
+    private async Task InvalidFormSubmitted(EditContext editContext)
     {
         await _message.Error("Форма заполнена неверно.", 5);
     }
