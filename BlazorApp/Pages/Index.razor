@@ -7,31 +7,29 @@
 
 <PageTitle>Телефонный справочник</PageTitle>
 
-
 <Button Type="primary" OnClick="ShowModal">
     Добавить контакт
 </Button>
-<Modal Title="Добавить пользователя"
+<Modal Title="Добавить контакт"
        Visible="@_visible"
        OnCancel="@HandleCancel"
        OkText="@("Добавить")"
        OnOk="@HandleOk"
        AfterClose="async ()=> StateHasChanged()">
-    <Space>
+    <Space Style="display:block;">
         <SpaceItem>
             <Form @ref="_contactForm" Model=@_contact OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted">
-                <FormItem Label="Имя">
+                <FormItem Style="display:block;" Label="Имя">
                     <Input @bind-Value="@_contact.Name" />
                 </FormItem>
-                <FormItem Label="Телефон">
+                <FormItem Style="display:block;" Label="Телефон">
                     <Input @bind-Value="@_contact.Phone" />
                 </FormItem>
-                <FormItem Label="Адрес">
+                <FormItem Style="display:block;" Label="Адрес">
                     <Input @bind-Value="@_contact.Address" />
                 </FormItem>
-                <FormItem Label="Кабинет">
+                <FormItem Style="display:block;" Label="Кабинет">
                     <Select @bind-Value="@_contact.OfficeId"
-                            Style="width: 120px;"
                             DefaultValue="0"
                             TItemValue="int"
                             TItem="string"
@@ -44,9 +42,8 @@
                         </SelectOptions>
                     </Select>
                 </FormItem>
-                <FormItem Label="Отдел">
+                <FormItem Style="display:block;" Label="Отдел">
                     <Select @bind-Value="@_contact.DepartmentId"
-                            Style="width: 120px;"
                             DefaultValue="0"
                             TItemValue="int"
                             TItem="string"
@@ -88,7 +85,6 @@
     private Contact _contact = new Contact();
 
     private bool _visible = false;
-    private bool _isValid = false;
 
     private bool _dataContactLoading = true;
 
@@ -133,17 +129,14 @@
             await context.SaveChangesAsync();
             _contact = new();
             _visible = false;
-            
             _dataContactLoading = false;
             _message.Success("Готово!", 3);
+            OnInitializedAsync();
         }
-       
-        StateHasChanged();
     }
 
     async Task InvalidFormSubmitted(EditContext editContext)
     {
-        _isValid = false;
         await _message.Error("Форма заполнена неверно.", 3);
     }
     #endregion

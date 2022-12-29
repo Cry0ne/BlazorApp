@@ -12,7 +12,7 @@ namespace BlazorApp.Entities
         public string Name { get; set; }
 
         [Required]
-        [RegularExpression(@"^((\+7|7|8)+([0-9]){10})$", ErrorMessage = "Введите номер формата +7/7/80000000000")]
+        [RegularExpression(@"^((\+7|7|8)+([0-9]){10})$", ErrorMessage = "Введите номер формата +7/7/8xxxxxxxxxx")]
         public string Phone { get; set; }
 
         [Required]
@@ -23,12 +23,12 @@ namespace BlazorApp.Entities
         [ForeignKey(nameof(Office))]
         public int OfficeId { get; set; }
 
-        public virtual Office Office { get; set; }
+        public virtual Office ?Office { get; set; }
 
         [Required]
         [ForeignKey(nameof(Department))]
         public int DepartmentId { get; set; }
 
-        public virtual Department Department { get; set; }
+        public virtual Department ?Department { get; set; }
     }
 }

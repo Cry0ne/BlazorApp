@@ -13,10 +13,10 @@
 <Space Direction="DirectionVHType.Horizontal" Style="align-items: start;max-width:600px">
 
 
-    <SpaceItem>
+    <SpaceItem >
         <Card Title=@("Отделы") Style="min-height:500px; min-width:450px">
             <Form @ref="_departmenteForm" Model=@_department OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
-                <FormItem Label="Название отдела">
+                <FormItem Style="display:block;" Label="Название отдела">
                     <Input @bind-Value="@_department.Name" />
                 </FormItem>
                 <Button Type="@ButtonType.Primary" HtmlType="submit">
@@ -42,8 +42,8 @@
     <SpaceItem>
         <Card Title=@("Кабинеты") Style="min-height:500px; min-width:450px">
             <Form @ref="_officeForm" Model=@_office OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
-                <FormItem Label="Номер кабинета">
-                    <Input @bind-Value="@_office.Number" />
+                <FormItem Style="display:block;" Label="Номер кабинета">
+                    <Input Placeholder="1" @bind-Value="@_office.Number" />
                 </FormItem>
                 <Button Type="@ButtonType.Primary" HtmlType="submit">
                     Добавить
