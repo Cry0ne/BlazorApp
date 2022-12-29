@@ -10,13 +10,13 @@
 <PageTitle>Настройки</PageTitle>
 
 
-<Space Direction="DirectionVHType.Horizontal" Style="max-width:600px">
+<Space Direction="DirectionVHType.Horizontal" Style="align-items: start;max-width:600px">
 
 
     <SpaceItem>
-        <Card Title=@("Отделы") Style="min-height:500px; min-width:400px">
+        <Card Title=@("Отделы") Style="min-height:500px; min-width:450px">
             <Form @ref="_departmenteForm" Model=@_department OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
-                <FormItem Label="Название">
+                <FormItem Label="Название отдела">
                     <Input @bind-Value="@_department.Name" />
                 </FormItem>
                 <Button Type="@ButtonType.Primary" HtmlType="submit">
@@ -25,7 +25,7 @@
             </Form>
             <hr />
             <Space>
-                <Table DataSource=@_departments HidePagination Loading=@_dataDepartmentLoading>
+                <Table DataSource=@_departments HidePagination Loading=@_dataDepartmentLoading ScrollY="200px">
                     <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
                     <PropertyColumn Filterable Property="c=>c.Name" Title="Название"></PropertyColumn>
                     <ActionColumn>
@@ -40,9 +40,9 @@
 
 
     <SpaceItem>
-        <Card Title=@("Кабинеты") Style="min-height:500px; min-width:400px">
+        <Card Title=@("Кабинеты") Style="min-height:500px; min-width:450px">
             <Form @ref="_officeForm" Model=@_office OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted" LabelColSpan="8" WrapperColSpan="16">
-                <FormItem Label="Номер кабинет">
+                <FormItem Label="Номер кабинета">
                     <Input @bind-Value="@_office.Number" />
                 </FormItem>
                 <Button Type="@ButtonType.Primary" HtmlType="submit">
@@ -103,7 +103,7 @@
         }
 
         _dataDepartmentLoading = false;
-        _message.Success("Готово!", 5);
+        _message.Success("Готово!", 3);
     }
 
     private async Task DeleteOffice(int id)
@@ -121,7 +121,7 @@
         }
 
         _dataOfficeLoading = false;
-        _message.Success("Готово!", 5);
+        _message.Success("Готово!", 3);
     }
 
 
@@ -131,39 +131,45 @@
         switch (editContext.Model)
         {
             case Office:
-                _dataOfficeLoading = true;
+                
                 if (_office is not null)
                 {
+                    _dataOfficeLoading = true;
                     _offices.Add(_office);
                     context.Offices?.Add(_office);
                     await context.SaveChangesAsync();
                     _office = new();
+                    _dataOfficeLoading = false;
+                    _message.Success("Готово!", 3);
                 }
-                _dataOfficeLoading = false;
+                
                 _officeForm?.Reset();
                 break;
 
             case Department:
-                _dataDepartmentLoading = true;
+                
                 if (_department is not null)
                 {
+                    _dataDepartmentLoading = true;
                     _departments.Add(_department);
                     context.Departments?.Add(_department);
                     await context.SaveChangesAsync();
                     _department = new();
+                    _dataDepartmentLoading = false;
+                    _message.Success("Готово!", 3);
                 }
-                _dataDepartmentLoading = false;
+                
                 _departmenteForm?.Reset();
                 break;
         }
         
         StateHasChanged();
-        _message.Success("Готово!", 5);
+        
     }
 
     private async Task InvalidFormSubmitted(EditContext editContext)
     {
-        await _message.Error("Форма заполнена неверно.", 5);
+        await _message.Error("Форма заполнена неверно.", 3);
     }
 }
 

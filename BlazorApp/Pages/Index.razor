@@ -8,14 +8,15 @@
 <PageTitle>Телефонный справочник</PageTitle>
 
 
-<Button Type="primary" OnClick="@ShowModal">
+<Button Type="primary" OnClick="ShowModal">
     Добавить контакт
 </Button>
 <Modal Title="Добавить пользователя"
        Visible="@_visible"
        OnCancel="@HandleCancel"
        OkText="@("Добавить")"
-       OnOk="@HandleOk">
+       OnOk="@HandleOk"
+       AfterClose="async ()=> StateHasChanged()">
     <Space>
         <SpaceItem>
             <Form @ref="_contactForm" Model=@_contact OnFinish="ValidFormSubmitted" OnFinishFailed="InvalidFormSubmitted">
@@ -65,47 +66,42 @@
 
 
 
-@if (_contacts == null || _departments == null)
-{
-    <Spin Tip="Загрузка..."/>
-}
-else
-{
-    <Table DataSource=@_contacts HidePagination>
-        <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Name" Title="Имя"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Phone" Title="Номер телефона"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Address" Title="Адрес"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Office.Number" Title="Кабинет"></PropertyColumn>
-        <PropertyColumn Filterable Property="c=>c.Department.Name" Title="Отдел"></PropertyColumn>
-        <ActionColumn>
-            <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteContact(context.Id)" OkText="Да" CancelText="Нет">
-                <Button Danger>Удалить</Button>
-            </Popconfirm>
-        </ActionColumn>
-    </Table>
-}
+<Table DataSource=@_contacts HidePagination Loading=@_dataContactLoading>
+    <PropertyColumn Filterable Property="c=>c.Id"></PropertyColumn>
+    <PropertyColumn Filterable Property="c=>c.Name" Title="Имя"></PropertyColumn>
+    <PropertyColumn Filterable Property="c=>c.Phone" Title="Номер телефона"></PropertyColumn>
+    <PropertyColumn Filterable Property="c=>c.Address" Title="Адрес"></PropertyColumn>
+    <PropertyColumn Filterable Property="c=>c.Office.Number" Title="Кабинет"></PropertyColumn>
+    <PropertyColumn Filterable Property="c=>c.Department.Name" Title="Отдел"></PropertyColumn>
+    <ActionColumn>
+        <Popconfirm Title="Удалить?" OnConfirm="()=> DeleteContact(context.Id)" OkText="Да" CancelText="Нет">
+            <Button Danger>Удалить</Button>
+        </Popconfirm>
+    </ActionColumn>
+</Table>
 
 @code {
-    private Form<AddContact> _form;
-    AntDesign.Internal.IForm _contactForm;
-    private bool _visible = false;
-    private bool _isValid = false;
-
-    private bool _dataContactLoading = true;
-
     private List<Contact> _contacts { get; set; } = new List<Contact>();
     private List<Department> _departments { get; set; } = new List<Department>();
     private List<Office> _offices { get; set; } = new List<Office>();
 
     private Contact _contact = new Contact();
 
+    private bool _visible = false;
+    private bool _isValid = false;
+
+    private bool _dataContactLoading = true;
+
+    AntDesign.Internal.IForm _contactForm;
+
     protected override async Task OnInitializedAsync()
     {
+        _dataContactLoading = true;
         using var context = await DbFactory.CreateDbContextAsync();
         _contacts = await context.Contacts.ToListAsync();
         _departments = await context.Departments.ToListAsync();
         _offices = await context.Offices.ToListAsync();
+        _dataContactLoading = false;
         StateHasChanged();
     }
 
@@ -113,19 +109,12 @@ else
     private void HandleOk(MouseEventArgs e)
     {
         _contactForm.Submit();
-
-        StateHasChanged();
-        if (_isValid)
-        {
-            _visible = false;
-        }
     }
 
     private void HandleCancel(MouseEventArgs e)
     {
         _contactForm.Reset();
         _visible = false;
-        StateHasChanged();
     }
 
     private void ShowModal()
@@ -139,12 +128,17 @@ else
 
         if (_contact is not null)
         {
+            _dataContactLoading = true;
             context.Contacts?.Add(_contact);
             await context.SaveChangesAsync();
             _contact = new();
-            _isValid = true;
+            _visible = false;
+            
+            _dataContactLoading = false;
             _message.Success("Готово!", 3);
         }
+       
+        StateHasChanged();
     }
 
     async Task InvalidFormSubmitted(EditContext editContext)
@@ -167,11 +161,9 @@ else
             _contacts.Remove(contact);
             context.Remove<Contact>(contact);
             await context.SaveChangesAsync();
-            
         }
-        _dataContactLoading = false
-        _message.Success("Готово!", 5);
-
+        _dataContactLoading = false;
+        _message.Success("Готово!", 3);
     }
     #endregion
 }
